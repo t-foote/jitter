@@ -1,0 +1,10 @@
+Included are 2 files
+logdata.csv - a csv file that contains timestamped messages indicated by message_id
+periods.csv - a csv file that identifies the expected period of a given message_id
+
+The goal of this exercise is to gain insight into the jitter present in each message in this log.
+In other words, we want to know how often a message is sent 'on time' according to the expected period.
+Use whatever tools you wish to dig into this data and let us know what you discover.
+There is no "right answer", we're looking for critical thinking and innovation.
+How far you want to take this is up to you. Please share any code you write in your efforts.
+Visuals are generally helpful too.
