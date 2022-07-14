@@ -1,5 +1,6 @@
 from typing import *
 from math import floor
+from csv import writer
 
 
 class LogTree:
@@ -29,6 +30,7 @@ class LogTree:
           (This makes an empty LogTree.)
         """
         if period_dict is None and timestamps_dict is None:
+            """This makes an empty tree."""
             self._timestamps = None
             self._period = None
             self._message_id = None
@@ -63,6 +65,7 @@ class LogTree:
             )
 
     def is_empty(self) -> bool:
+        """Returns True iff self is an 'empty tree'."""
         return self._message_id is None
 
     def __str__(self, depth: int = 0) -> str:
@@ -117,9 +120,11 @@ class LogTree:
         if self.find(message_id) is not None:
             return self.find(message_id).timestamps()
 
-    def accuracy(self, message_id: int) -> Optional[float]:
+    def accuracy(self, message_id: int = None) -> Optional[float]:
         """Returns an 'accuracy score' of a given message_id, which is the average absolute value difference between
         the expected period and the actual gap between messages; or None if message_id isn't in the tree."""
+        if message_id is None:
+            message_id = self._message_id
         out = 0
         t = self.timestamps(message_id)
         p = self.period(message_id)
@@ -127,6 +132,18 @@ class LogTree:
             for i in range(len(t) - 1):
                 out += abs((t[i + 1] - t[i]) - p)
         return out / (len(t) - 1)
+
+    def gaps(self, message_id: int = None) -> Optional[List[float]]:
+        """Returns a list of all gaps (in milliseconds) between messages sent; or None if message_id isn't in the tree."""
+        if message_id is None:
+            message_id = self._message_id
+        out = []
+        t = self.timestamps(message_id)
+        p = self.period(message_id)
+        if message_id in self:
+            for i in range(len(t) - 1):
+                out.append(t[i + 1] - t[i] - p)
+        return out
 
     def accuracy_report(self) -> Dict[int, float]:
         """Returns a dictionary of each message_id mapped to its accuracy score."""
@@ -158,6 +175,9 @@ class LogTree:
 
 
 def import_files(periods_filename: str, logdata_filename: str) -> LogTree:
+    """This is a function that takes in 2 file names and returns a LogTree object. The periods_filename file 
+    be formatted similar to periods.csv; and like-wise, the logdata_filename must be formatted similar to 
+    logdata.csv. Both CSV files's first rows will be treated as header rows and thus ignored."""
 
     period_dict = dict()
     timestamps_dict = dict()
@@ -171,6 +191,14 @@ def import_files(periods_filename: str, logdata_filename: str) -> LogTree:
             timestamps_dict[int(item.split(",")[1])].append(float(item.split(",")[0]))
 
     return LogTree(period_dict, timestamps_dict)
+
+
+def dict_to_csv(csv_filename_to_write: str, dictionary: dict) -> None:
+    """Takes the filename of a CSV file & a dictionary, and writes data from the dictionary into the CSV file."""
+    w = writer(open(csv_filename_to_write, "w"))
+    for i, j in dictionary.items():
+        w.writerow([i, j])
+    open(csv_filename_to_write, "w").close()
 
 
 if __name__ == '__main__':
